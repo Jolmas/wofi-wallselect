@@ -7,6 +7,8 @@ transiciones animadas: fundido, barrido, disco, iris bloom, pixelado, portal…
 Pensado para sesiones Wayland con DMS, pero incluye respaldos para `swww` y
 `swaybg` si DMS no está disponible.
 
+![image](image.png)
+
 ## Características
 
 - Rejilla responsive de miniaturas (4 o 5 columnas según la resolución).

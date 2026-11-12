@@ -258,6 +258,12 @@ systemctl --user restart dms
 - DMS (DankMaterialShell)
 - Pantalla 1920×1080 (`eDP-1`)
 
+## Enlaces a fondos de pantalla:
+
+[BigLinux Wallpapers](https://github.com/biglinux/extra-biglinux-wallpapers)
+[BigLinux Wallpapers 2023](https://github.com/biglinux/extra-biglinux-wallpapers-2023)
+
+
 ## Licencia
 
 MIT. Consulta [LICENSE](LICENSE).

@@ -73,6 +73,8 @@ set -uo pipefail
 
 version="20261111"
 
+logo="preferences-desktop-wallpaper"
+
 # ----------------------------------------------------------------------------------------
 # Internationalize the wallselect.sh script
 # ----------------------------------------------------------------------------------------
@@ -273,7 +275,7 @@ generate_thumbs_parallel() {
 # Lista de fondos, delimitada por NUL.
 load_files() {
     local -a found=()
-    [[ -d "$WALL_DIR" ]] || die "$(printf "$(gettext "no existe la carpeta %s")"  "$WALL_DIR")"
+    [[ -d "$WALL_DIR" ]] || { notify "$(gettext "Wallselect")" "\n$(printf "$(gettext "no existe la carpeta %s")" "$WALL_DIR")" ; die "$(printf "$(gettext "no existe la carpeta %s")"  "$WALL_DIR")" ; } ;
 
     if [[ "$SHUFFLE" -eq 1 ]]; then
         mapfile -d '' -t found < <(

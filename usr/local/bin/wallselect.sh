@@ -151,7 +151,7 @@ which gettext 1> /dev/null 2> /dev/null || { yad \
 
 
 
-for cmd in xdg-user-dir notify-send wofi find swaybg cut md5sum printf ; do
+for cmd in xdg-user-dir notify-send wofi find swaybg cut md5sum printf sort magick jq wlr-randr; do
     if ! command -v "${cmd}" >/dev/null 2>&1; then
         yad \
             --center \

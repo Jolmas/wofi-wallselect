@@ -7,6 +7,7 @@
 # pixelate, portal, fade o random).
 #
 # Uso:
+#
 #   wallselect.sh                 Abre el menú de fondos
 #   wallselect.sh --random        Aplica un fondo al azar
 #   wallselect.sh --set RUTA      Aplica un fondo concreto
@@ -14,19 +15,89 @@
 #   wallselect.sh --help
 #
 # Atajos dentro del menú:
+#
 #   Enter   aplicar el fondo seleccionado
 #   Esc     cerrar
 #
 
+
+
+
+
+# $ xgettext \
+#     --language=Shell \
+#     --keyword=gettext \
+#     --from-code=UTF-8 \
+#     --package-name=wallselect \
+#     --package-version=1.0 \
+#     --msgid-bugs-address="kurumin@disroot.org" \
+#     --output=wallselect.pot \
+#     wallselect.sh
+
+
+# Generate new translations
+
+# $ msginit --input=wallselect.pot \
+#        --locale=pt_BR \
+#        --output=pt_BR.po
+
+
+# mkdir -p locale/pt_BR/LC_MESSAGES/
+
+# msgfmt pt_BR.po -o locale/pt_BR/LC_MESSAGES/wallselect.mo
+
+
+# man page
+
+# LANGUAGE=en_GB.UTF-8 \
+# LANG=en_GB.UTF-8 \
+# LC_ALL=C.UTF-8 \
+# help2man \
+#     --name="Wallpaper selector using Wofi and DMS" \
+#     --no-info \
+#     ./wallselect.sh \
+#     -o wallselect.1
+
+# Como el script utiliza gettext, necesitamos tener la traducción compilada y disponible en:
+
+# /usr/share/locale/****/LC_MESSAGES/wallselect.mo
+
+
+# man ./wallselect.1
+
+
+# ========================================================================================
+
+
 set -uo pipefail
 
-# ---------------------------------------------------------------------------
+version="20261111"
+
+logo="preferences-desktop-wallpaper"
+
+# ----------------------------------------------------------------------------------------
+# Internationalize the wallselect.sh script
+# ----------------------------------------------------------------------------------------
+
+export TEXTDOMAIN="wallselect"
+export TEXTDOMAINDIR="/usr/share/locale"
+
+# export TEXTDOMAIN="wallselect"
+# export TEXTDOMAINDIR="$PWD/locale"
+
+
+
+# ----------------------------------------------------------------------------------------
 # Configuración (se puede sobreescribir en config.sh)
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/wofi/wallselect/config.sh"
 [[ -r "$CONFIG_FILE" ]] && source "$CONFIG_FILE"
 
-WALL_DIR="${WALL_DIR:-$HOME/Imágenes/Wallpapers}"
+# Set the wallpaper directory using the user's configured Pictures folder.
+# Allows overriding WALL_DIR through an environment variable.
+WALL_DIR="${WALL_DIR:-$(xdg-user-dir PICTURES)/Wallpapers}"
+
 THEME="${THEME:-${XDG_CONFIG_HOME:-$HOME/.config}/wofi/wallselect/style.css}"
 WOFI_CONF="${WOFI_CONF:-${XDG_CONFIG_HOME:-$HOME/.config}/wofi/wallselect/wofi.conf}"
 CACHE_DIR="${CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/wofi-wallselect}"
@@ -57,11 +128,56 @@ WALL_DIR="${WALL_DIR%/}"
 
 mkdir -p "$CACHE_DIR" "$THUMB_DIR"
 
-# ---------------------------------------------------------------------------
+
+# ---------- Check whether the required programs are installed ----------
+
+if ! command -v yad &> /dev/null; then
+
+  echo -e "\nThe yad program is not installed.\n"
+
+  exit 1
+
+fi
+
+
+which gettext 1> /dev/null 2> /dev/null || { yad \
+--center \
+--window-icon "$logo" \
+--image=dialog-error \
+--timeout=10 \
+--no-buttons \
+--title "Warning" \
+--text "The gettext program is not installed." \
+--width="450" --height="100" \
+2>/dev/null ; exit ; }
+
+
+
+for cmd in xdg-user-dir notify-send wofi find swaybg cut md5sum printf sort magick jq wlr-randr; do
+    if ! command -v "${cmd}" >/dev/null 2>&1; then
+        yad \
+            --center \
+            --window-icon "$logo" \
+            --image=dialog-error \
+            --timeout=10 \
+            --no-buttons \
+            --title "$(gettext "Advertencia")" \
+            --text "$(printf '%s\n' "$(gettext "El siguiente programa necesario no está instalado: ")" "${cmd}")" \
+            --width="450" \
+            --height="100" \
+            2>/dev/null
+        exit 1
+    fi
+done
+
+
+
+# ----------------------------------------------------------------------------------------
 # Utilidades
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+
 die() {
-    echo "wallselect: $*" >&2
+    printf 'wallselect: %s\n' "$1" >&2
     exit 1
 }
 
@@ -79,7 +195,7 @@ notify() {
     local title="$1" body="${2:-}" icon="${3:-}"
     [[ "$NOTIFY" -eq 1 ]] || return 0
     have notify-send || return 0
-    local args=(-a "Fondos" "$title")
+    local args=(-a "$(gettext "Fondos")" "$title")
     [[ -n "$body" ]] && args+=("$body")
     [[ -n "$icon" && -f "$icon" ]] && args+=(-i "$icon")
     notify-send "${args[@]}" >/dev/null 2>&1 || true
@@ -102,9 +218,22 @@ thumb_rel() {
     printf '%s\n' "$rel"
 }
 
+
+
+
+
 thumb_path() {
-    printf '%s/%s\n' "$THUMB_DIR" "$(thumb_rel "$1")"
+    local src="$1"
+    local rel
+
+    [[ -n "$src" ]] || return 1
+
+    rel=$(thumb_rel "$src") || return 1
+    [[ -n "$rel" ]] || return 1
+
+    printf '%s/%s\n' "$THUMB_DIR" "$rel"
 }
+
 
 # Genera miniaturas en paralelo. Acepta rutas como argumentos.
 generate_thumbs_parallel() {
@@ -118,8 +247,11 @@ generate_thumbs_parallel() {
         else
             rel=${src##*/}
         fi
+
         rel=${rel//:/_}
         rel=${rel//$'\n'/_}
+        rel=${rel//\\/_}
+
         dst="$cache/$rel"
         if [[ -f $dst && $dst -nt $src ]]; then
             exit 0
@@ -143,20 +275,20 @@ generate_thumbs_parallel() {
 # Lista de fondos, delimitada por NUL.
 load_files() {
     local -a found=()
-    [[ -d "$WALL_DIR" ]] || die "no existe la carpeta $WALL_DIR"
+    [[ -d "$WALL_DIR" ]] || { notify "$(gettext "Wallselect")" "\n$(printf "$(gettext "no existe la carpeta %s")" "$WALL_DIR")" ; die "$(printf "$(gettext "no existe la carpeta %s")"  "$WALL_DIR")" ; } ;
 
     if [[ "$SHUFFLE" -eq 1 ]]; then
         mapfile -d '' -t found < <(
             find "$WALL_DIR" -type f \
                 \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \
-                   -o -iname '*.webp' -o -iname '*.gif' \) -print0 |
+                   -o -iname '*.webp' -o -iname '*.gif' -o -iname '*.heic' -o -iname '*.avif' \) -print0 |
             shuf -z
         )
     else
         mapfile -d '' -t found < <(
             find "$WALL_DIR" -type f \
                 \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \
-                   -o -iname '*.webp' -o -iname '*.gif' \) -print0 |
+                   -o -iname '*.webp' -o -iname '*.gif'  -o -iname '*.heic' -o -iname '*.avif' \) -print0 |
             sort -z
         )
     fi
@@ -165,25 +297,37 @@ load_files() {
 }
 
 # Fondo actual según DMS.
+
 get_current_wallpaper() {
-    local out screen
+    local out="" screen=""
+
     if have dms; then
         out=$(dms ipc call wallpaper get 2>/dev/null) || out=""
+
         case "$out" in
             ERROR:*[Pp]er-monitor*)
                 screen=$(dms ipc call outputs current 2>/dev/null |
-                    jq -r '.[0] // empty' 2>/dev/null)
+                    jq -r '.[0] // empty' 2>/dev/null) || screen=""
+
                 if [[ -z "$screen" ]]; then
                     screen=$(dms ipc call outputs current 2>/dev/null |
                         sed -n 's/.*"\([^"]*\)".*/\1/p' | head -n 1)
                 fi
-                [[ -n "$screen" ]] && out=$(dms ipc call wallpaper getFor "$screen" 2>/dev/null)
+
+                [[ -n "$screen" ]] &&
+                    out=$(dms ipc call wallpaper getFor "$screen" 2>/dev/null) || out=""
                 ;;
-            ERROR:*|"") out="" ;;
+
+            ERROR:*|"")
+                out=""
+                ;;
         esac
     fi
+
     printf '%s\n' "$out"
 }
+
+
 
 # Nombre legible de la transición configurada en DMS.
 get_transition_label() {
@@ -192,25 +336,25 @@ get_transition_label() {
         raw=$(jq -r '.wallpaperTransition // "fade"' "$session" 2>/dev/null || echo fade)
     fi
     case "$raw" in
-        random)      echo "Aleatoria" ;;
-        none)        echo "Sin animación" ;;
-        fade)        echo "Fundido" ;;
-        wipe)        echo "Barrido" ;;
-        disc)        echo "Disco" ;;
-        stripes)     echo "Rayas" ;;
-        "iris bloom") echo "Iris Bloom" ;;
-        pixelate)    echo "Pixelado" ;;
-        portal)      echo "Portal" ;;
+        random)      echo "$(gettext "Aleatoria")" ;;
+        none)        echo "$(gettext "Sin animación")" ;;
+        fade)        echo "$(gettext "Fundido")" ;;
+        wipe)        echo "$(gettext "Barrido")" ;;
+        disc)        echo "$(gettext "Disco")" ;;
+        stripes)     echo "$(gettext "Rayas")" ;;
+        "iris bloom") echo "$(gettext "Iris Bloom")" ;;
+        pixelate)    echo "$(gettext "Pixelado")" ;;
+        portal)      echo "$(gettext "Portal")" ;;
         *)           echo "$raw" ;;
     esac
 }
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # Aplicar fondo (DMS primero; swww/swaybg como respaldo)
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 apply_wallpaper() {
     local img="$1" cur res screen
-    [[ -f "$img" ]] || { notify "Fondo no encontrado" "$img"; return 1; }
+    [[ -f "$img" ]] || { notify "$(gettext "Fondo no encontrado")" "$img"; return 1; }
 
     if have dms; then
         cur=$(dms ipc call wallpaper get 2>/dev/null) || cur=""
@@ -225,7 +369,7 @@ apply_wallpaper() {
                 if [[ -n "$screen" ]]; then
                     res=$(dms ipc call wallpaper setFor "$screen" "$img" 2>&1)
                 else
-                    res="ERROR: no se pudo detectar el monitor"
+                    res="$(gettext "ERROR: no se pudo detectar el monitor")"
                 fi
                 ;;
             *)
@@ -234,11 +378,13 @@ apply_wallpaper() {
         esac
 
         if [[ "$res" == SUCCESS:* ]]; then
-            notify "Fondo cambiado" "$(basename "$img")" "$img"
+            notify "$(gettext "Fondo cambiado")" "$(basename "$img")" "$img"
             if [[ "$THEME_NOTIFY" -eq 1 ]]; then
                 (
                     sleep 1.2
-                    notify "Tema aplicado" "Colores generados desde $(basename "$img")"
+                    notify "$(gettext "Tema aplicado")" "$(printf "$(gettext "Colores generados desde %s")" "$(basename "$img")")"
+    
+                    
                 ) &
             fi
             return 0
@@ -257,12 +403,12 @@ apply_wallpaper() {
         pkill -x swaybg >/dev/null 2>&1 || true
         setsid swaybg -i "$img" -m fill >/dev/null 2>&1 &
     fi
-    notify "Fondo cambiado" "$(basename "$img")" "$img"
+    notify "$(gettext "Fondo cambiado")" "$(basename "$img")" "$img"
 }
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # Geometría / fondo difuminado del menú
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # Devuelve "ANCHO ALTO" del monitor. Es importante conocer también el alto:
 # una ventana más alta que la pantalla no se puede centrar.
 get_screen_res() {
@@ -306,19 +452,19 @@ make_background() {
     printf '%s\n' "$bg"
 }
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # Menú principal
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 show_menu() {
     local -a files=() ordered=() missing=() wofi_args=()
     local img th icon current idx=-1 i count bg="" css_file="" est_h
     local screen_w screen_h win_w cell cols rows row_h max_h icon_size label prompt settings_label=""
     local input_file rc selected src
 
-    have wofi || die "wofi no está instalado o no está en PATH"
-
+    have wofi || die "$(gettext "Wofi no está instalado o no está en PATH")"
+    
     mapfile -d '' -t files < <(load_files)
-    ((${#files[@]})) || die "no se encontraron fondos en $WALL_DIR"
+    ((${#files[@]})) || die "$(printf "$(gettext "no se encontraron fondos en  %s")"  "$WALL_DIR")"
 
     # Genera las miniaturas que falten (en segundo plano si hay muchas).
     for img in "${files[@]}"; do
@@ -383,7 +529,7 @@ show_menu() {
 
     label=$(get_transition_label)
     count=${#files[@]}
-    prompt="Buscar fondos · ${count} · ${label}"
+    prompt="$(gettext "Buscar fondos") · ${count} · ${label}"
 
     # Fondo difuminado del menú.
     bg=$(make_background "$current" "$win_w" "$est_h")
@@ -394,15 +540,29 @@ show_menu() {
     input_file="$CACHE_DIR/menu-$$.input"
     : > "$input_file"
     declare -A SRC_BY_ICON=()
+
+
     for img in "${files[@]}"; do
         th=$(thumb_path "$img")
         icon=$(thumb_rel "$img")
-        if [[ ! -f "$th" || "$img" -nt "$th" ]]; then
-            # Respaldo mientras se genera la miniatura: un enlace permite a
-            # wofi mostrar la imagen original con la misma ruta relativa.
-            mkdir -p "${th%/*}"
-            ln -sf "$img" "$th"
-        fi
+
+# Wofi only receives thumbnails that have actually been generated, avoiding issues with AVIF files and symbolic links.
+
+if [[ ! -f "$th" || "$img" -nt "$th" ]]; then
+    generate_thumbs_parallel "$img" >/dev/null 2>&1
+fi
+
+if [[ ! -f "$th" ]]; then
+    printf "$(gettext "wallselect: miniatura no disponible: %s")" "$img" >&2
+    continue
+fi
+
+
+
+if [[ -z "$icon" ]]; then
+    continue
+fi
+
         SRC_BY_ICON["$icon"]="$img"
         printf 'img:%s\n' "$icon" >> "$input_file"
     done
@@ -410,7 +570,7 @@ show_menu() {
     # Entrada extra para abrir los ajustes de transición de DMS; wofi no
     # permite asignar un atajo personalizado de un solo uso.
     if have dms; then
-        settings_label="⚙ Ajustes de transición: ${label}"
+        settings_label="⚙ $(gettext "Ajustes de transición:") ${label}"
         printf '%s\n' "$settings_label" >> "$input_file"
     fi
 
@@ -420,7 +580,8 @@ show_menu() {
         : > "$css_file"
         [[ -r "$THEME" ]] && cat "$THEME" >> "$css_file"
         {
-            printf '\n/* Fondo generado por wallselect */\n'
+            printf '\n/* %s */\n' "$(gettext "Fondo generado por wallselect")"
+            
             printf '#window {\n'
             if [[ -n "$bg" && -f "$bg" ]]; then
                 printf '  background-image: url("%s");\n' "$bg"
@@ -476,9 +637,16 @@ show_menu() {
     rm -f "$input_file"
     [[ -n "$css_file" ]] && rm -f "$css_file"
 
-    if ((rc != 0)); then
-        exit 0
+
+if ((rc != 0)); then
+    if ((rc > 1)); then
+        notify "$(gettext "Erro no Wofi")" \
+            "$(gettext "Consulte o log para mais detalhes")"
+        printf 'Erro do Wofi (código %s):\n' "$rc" >&2
+        cat "$CACHE_DIR/wofi.log" >&2
     fi
+    return 0
+fi
 
     if [[ "$selected" == img:* ]]; then
         icon="${selected#img:}"
@@ -486,7 +654,7 @@ show_menu() {
         if [[ -n "$src" && -f "$src" ]]; then
             apply_wallpaper "$src"
         else
-            notify "Fondo no encontrado" "$icon"
+            notify "$(gettext "Fondo no encontrado")" "$icon"
         fi
     elif [[ -n "$settings_label" && "$selected" == "$settings_label" ]]; then
         # Ajustes de transición de DMS (pestaña Wallpaper).
@@ -496,52 +664,97 @@ show_menu() {
     fi
 }
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # Argumentos
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+
 case "${1:-}" in
     --help|-h)
-        cat <<'EOF'
-wallselect.sh - selector de fondos para wofi + DMS
+        cat <<EOF
 
-  --random              Aplica un fondo al azar con la animación de DMS
-  --set RUTA            Aplica un fondo concreto
-  --generate-thumbs     Genera/actualiza las miniaturas de la caché
-  --dir RUTA            Usa otra carpeta de fondos
-  --help                Muestra esta ayuda
+        $(gettext "
+wallselect.sh - Selector de fondos de pantalla para Wofi + DMS
 
-Atajos del menú:
-  Enter                 Aplicar fondo
-  Esc                   Cerrar
+USO: wallselect.sh [OPCIÓN]
+
+
+DESCRIPCIÓN: 
+
+Explora tu colección de fondos de pantalla, visualiza miniaturas y aplica imágenes con transiciones animadas de DMS.
+
+
+OPCIONES: 
+
+--random Selecciona y aplica un fondo de pantalla aleatorio.
+
+--set ARCHIVO Aplica directamente el fondo de pantalla especificado.
+
+--dir DIRECTORIO Establece un directorio personalizado para los fondos de pantalla.
+
+--generate-thumbs Genera o actualiza las miniaturas de las imágenes en caché.
+
+--help, -h Muestra este mensaje de ayuda y finaliza.
+
+--version, -v versión
+
+
+ATAJOS DEL MENÚ: Enter Aplica el fondo de pantalla seleccionado.
+
+Esc Cierra el selector sin modificar el fondo de pantalla actual.
+
+
+FORMATOS COMPATIBLES: JPG, JPEG, PNG, WEBP, GIF, HEIC y AVIF.
+
+
+CARACTERÍSTICAS:
+
+Integración con Wofi y DMS.
+Transiciones animadas entre fondos de pantalla.
+Generación paralela de miniaturas.
+Vista previa con fondo desenfocado.
+Notificaciones al cambiar el fondo de pantalla.
+Aplicación alternativa mediante swww o swaybg.")
+
 EOF
+
         exit 0
         ;;
     --dir)
-        [[ -n "${2:-}" ]] || die "--dir necesita una ruta"
+        [[ -n "${2:-}" ]] || die "$(gettext "--dir necesita una ruta")"
         WALL_DIR="${2/#\~/$HOME}"
         WALL_DIR="${WALL_DIR%/}"
         [[ "$WALL_DIR" == /* ]] || WALL_DIR="$PWD/$WALL_DIR"
         ;;
     --set)
-        [[ -n "${2:-}" ]] || die "--set necesita una ruta"
+        [[ -n "${2:-}" ]] || die "$(gettext "--set necesita una ruta")"
         apply_wallpaper "${2/#\~/$HOME}"
         exit $?
         ;;
     --random)
         mapfile -d '' -t all_files < <(load_files)
-        ((${#all_files[@]})) || die "no se encontraron fondos en $WALL_DIR"
+        ((${#all_files[@]})) || die "$(printf "$(gettext "no se encontraron fondos en %s")"  "$WALL_DIR")"
         pick=$(printf '%s\0' "${all_files[@]}" | shuf -z -n 1 | tr -d '\0')
         apply_wallpaper "$pick"
         exit $?
         ;;
     --generate-thumbs)
         mapfile -d '' -t all_files < <(load_files)
-        ((${#all_files[@]})) || die "no se encontraron fondos en $WALL_DIR"
-        echo "Generando miniaturas de ${#all_files[@]} fondos en $THUMB_DIR ..."
+        
+        ((${#all_files[@]})) || die "$(printf "$(gettext "no se encontraron fondos en %s")"  "$WALL_DIR")"
+        
+        printf "$(gettext "Generando miniaturas de %s fondos en %s ...")\n" "${#all_files[@]}" "$THUMB_DIR"
+
+    
         generate_thumbs_parallel "${all_files[@]}"
-        echo "Listo."
+        echo "$(gettext "Listo.")"
         exit 0
         ;;
+    --version|-v)
+        echo "$(basename $0) $version"
+        exit 0
+        ;;
+
 esac
 
 show_menu
+

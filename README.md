@@ -7,7 +7,7 @@ transiciones animadas: fundido, barrido, disco, iris bloom, pixelado, portal…
 Pensado para sesiones Wayland con DMS, pero incluye respaldos para `swww` y
 `swaybg` si DMS no está disponible.
 
-![image](image.png)
+![image](usr/share/doc/wofi-wallselect/image.png)
 
 ## Características
 
@@ -23,19 +23,25 @@ Pensado para sesiones Wayland con DMS, pero incluye respaldos para `swww` y
 
 ## Requisitos
 
-Resumen: `wofi` (1.4.1 o superior), `bash` y, recomendado, `DMS`. Para
+Resumen: `wofi` (1.5.3 o superior), `bash` y, recomendado, `DMS`. Para
 miniaturas y fondo difuminado hace falta `ImageMagick`.
 
 Consulta el detalle y los comandos por distribución en
-[REQUIREMENTS.md](REQUIREMENTS.md).
+[REQUIREMENTS.md](usr/share/doc/wofi-wallselect/REQUIREMENTS.md).
 
 ## Instalación
 
 ```bash
 git clone https://github.com/Jolmas/wofi-wallselect.git
 cd wofi-wallselect
-chmod +x install.sh
-./install.sh
+sudo cp -r usr /
+sudo cp -r etc /
+
+
+mv -i ~/.config/wofi  ~/.config/wofi-backup
+
+cp -r /etc/skel/.config/wofi-wallselect ~/.config/wofi
+
 ```
 
 El instalador:
@@ -54,28 +60,15 @@ Opciones:
 ./install.sh --help
 ```
 
-También puedes usar `make install`, `make check` o `make thumbs`.
-
-### Instalación manual
-
-```bash
-install -Dm755 src/wallselect.sh ~/.config/wofi/wallselect/wallselect.sh
-install -Dm644 src/style.css     ~/.config/wofi/wallselect/style.css
-install -Dm644 src/wofi.conf     ~/.config/wofi/wallselect/wofi.conf
-install -Dm644 src/config.sh     ~/.config/wofi/wallselect/config.sh
-mkdir -p ~/.cache/wofi-wallselect/thumbs
-~/.config/wofi/wallselect/wallselect.sh --generate-thumbs
-```
-
 ## Uso
 
 ```bash
-~/.config/wofi/wallselect/wallselect.sh           # abrir el menú
-~/.config/wofi/wallselect/wallselect.sh --random  # fondo al azar
-~/.config/wofi/wallselect/wallselect.sh --set RUTA
-~/.config/wofi/wallselect/wallselect.sh --dir RUTA
-~/.config/wofi/wallselect/wallselect.sh --generate-thumbs
-~/.config/wofi/wallselect/wallselect.sh --help
+wallselect.sh           # abrir el menú
+wallselect.sh --random  # fondo al azar
+wallselect.sh --set RUTA
+wallselect.sh --dir RUTA
+wallselect.sh --generate-thumbs
+wallselect.sh --help
 ```
 
 | Tecla          | Acción                                       |
@@ -94,23 +87,40 @@ solo uso para esa acción).
 
 ```xml
 <keybind key="W-F2">
-  <action name="Execute" command="$HOME/.config/wofi/wallselect/wallselect.sh"/>
+  <action name="Execute" command="/usr/local/bin/wallselect.sh"/>
 </keybind>
 ```
 
 **Hyprland** (`~/.config/hypr/hyprland.conf`):
 
 ```ini
-bind = SUPER, W, exec, ~/.config/wofi/wallselect/wallselect.sh
+bind = SUPER, W, exec, /usr/local/bin/wallselect.sh
 ```
 
 **Waybar** (módulo personalizado):
+
+Requiere una fuente Nerd Fonts.
+
+https://github.com/ryanoasis/nerd-fonts/releases/latest
+
+```
+mkdir -p ~/.local/share/fonts
+
+cd /tmp
+
+wget https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz
+
+tar -xf JetBrainsMono.tar.xz -C ~/.local/share/fonts/
+
+fc-cache -fv
+```
+
 
 ```json
 "custom/wallpaper": {
   "format": "󰸉",
   "tooltip": "Cambiar fondo",
-  "on-click": "~/.config/wofi/wallselect/wallselect.sh"
+  "on-click": "/usr/local/bin/wallselect.sh"
 }
 ```
 
@@ -196,27 +206,63 @@ systemctl --user restart dms
 ## Estructura del proyecto
 
 ```
-wofi-wallselect/
-├── install.sh
-├── uninstall.sh
-├── Makefile
-├── README.md
-├── DESCRIPTION.md
-├── REQUIREMENTS.md
-├── LICENSE
-└── src/
-    ├── wallselect.sh
-    ├── style.css
-    ├── wofi.conf
-    └── config.sh
+├── etc
+│   └── skel
+└── usr
+    ├── local
+    │   └── bin
+    │       └── wallselect.sh
+    └── share
+        ├── applications
+        │   └── wallselect.desktop
+        ├── doc
+        │   └── wofi-wallselect
+        │       ├── AUTHORS
+        │       ├── ChangeLog
+        │       ├── DESCRIPTION.md
+        │       ├── LICENSE
+        │       ├── Makefile
+        │       ├── README.md
+        │       ├── REQUIREMENTS.md
+        │       ├── image.png
+        │       ├── install.sh
+        │       ├── po
+        │       │   ├── en_GB.po
+        │       │   ├── pt_BR.po
+        │       │   └── wallselect.pot
+        │       └── uninstall.sh
+        ├── icons
+        │   └── hicolor
+        │       └── 48x48
+        │           └── places
+        ├── locale
+        │   ├── en_US
+        │   │   └── LC_MESSAGES
+        │   │       └── wallselect.mo
+        │   └── pt_BR
+        │       └── LC_MESSAGES
+        │           └── wallselect.mo
+        └── man
+            ├── man1
+            └── pt_BR
+                └── man1
+
+24 directories, 17 files
+
 ```
 
 ## Entorno probado
 
-- wofi `1.4.1`
+- wofi `1.5.3`
 - Wayland + labwc
 - DMS (DankMaterialShell)
 - Pantalla 1920×1080 (`eDP-1`)
+
+## Enlaces a fondos de pantalla:  
+
+[BigLinux Wallpapers](https://github.com/biglinux/extra-biglinux-wallpapers)  
+[BigLinux Wallpapers 2023](https://github.com/biglinux/extra-biglinux-wallpapers-2023)  
+
 
 ## Licencia
 

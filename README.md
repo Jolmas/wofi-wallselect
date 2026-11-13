@@ -27,7 +27,7 @@ Resumen: `wofi` (1.5.3 o superior), `bash` y, recomendado, `DMS`. Para
 miniaturas y fondo difuminado hace falta `ImageMagick`.
 
 Consulta el detalle y los comandos por distribución en
-[usr/share/doc/wofi-wallselect/REQUIREMENTS.md](REQUIREMENTS.md).
+[REQUIREMENTS.md](usr/share/doc/wofi-wallselect/REQUIREMENTS.md).
 
 ## Instalación
 

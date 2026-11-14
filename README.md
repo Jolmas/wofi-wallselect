@@ -37,11 +37,7 @@ cd wofi-wallselect
 sudo cp -r usr /
 sudo cp -r etc /
 
-
 mv -i ~/.config/wofi  ~/.config/wofi-backup
-
-cp -r /etc/skel/.config/wofi-wallselect ~/.config/wofi
-
 ```
 
 El instalador:

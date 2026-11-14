@@ -129,9 +129,10 @@ Comment[zh_CN]=使用 Wofi 和 DMS 浏览并应用带有动画过渡效果的壁
 Comment[zh_TW]=使用 Wofi 和 DMS 瀏覽並套用具有動畫轉場效果的桌布
 
 Exec=wallselect.sh
+TryExec=wallselect.sh
 Icon=preferences-desktop-wallpaper
 Terminal=false
-Categories=Utility;DesktopSettings;
+Categories=Settings;DesktopSettings;
 StartupNotify=false
 X-MultipleArgs=false
 

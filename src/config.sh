@@ -4,7 +4,8 @@
 # Se carga automáticamente si existe. Descomenta y ajusta lo que necesites.
 #
 
-# Carpeta donde están los fondos.
+# Carpeta donde están los fondos. Si no se define, el script usa la carpeta
+# Imágenes del usuario (xdg-user-dir PICTURES) seguida de /Wallpapers.
 # WALL_DIR="$HOME/Pictures/Wallpapers"
 
 # Tema de wofi (CSS).
@@ -15,7 +16,8 @@
 # de ~/.config/wofi/config, que impiden que la ventana quede centrada.
 # WOFI_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/wofi/wallselect/wofi.conf"
 
-# Carpeta de caché (miniaturas y fondos difuminados).
+# Carpeta de caché (miniaturas y fondos difuminados). Las miniaturas se
+# guardan en subcarpetas derivadas de WALL_DIR para evitar colisiones.
 # CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/wofi-wallselect"
 
 # Tamaño de las miniaturas generadas.
@@ -31,10 +33,10 @@
 # SHUFFLE=0
 
 # 1 = enviar notificaciones al cambiar de fondo.
-NOTIFY=0
+# NOTIFY=1
 
 # 1 = avisar también de que el tema (colores) se ha regenerado.
-THEME_NOTIFY=0
+# THEME_NOTIFY=1
 
 # Número de procesos en paralelo al generar miniaturas.
 # JOBS=8

@@ -6,6 +6,28 @@
 
 
 
+2026-11-14 - Mantenimiento
+------------------------------------------------------------------------------------------
+
+Reorganización del repositorio: `src/` es la fuente canónica y `usr/` queda para
+empaquetado. Instalador y desinstalador movidos a la raíz y unificados en una
+instalación de usuario sin sudo.
+
+Corregidos los permisos de ejecución de los scripts y las rutas del instalador,
+del Makefile y de los README.
+
+El script ya no exige yad, gettext, jq, notify-send, swaybg, wlr-randr ni
+ImageMagick. Las dependencias opcionales degradan con un aviso y las
+traducciones funcionan sin gettext.
+
+Las miniaturas se generan una sola vez en paralelo, la caché se separa por
+carpeta de fondos y se evita el choque de nombres con `:` o `\`.
+
+Si no hay miniatura, el menú usa la imagen original. `config.sh` ya no desactiva
+las notificaciones por defecto. Traducciones regeneradas (`en` y `pt_BR`).
+
+
+
 2026-11-12 - Fernando Souza
 ------------------------------------------------------------------------------------------
 
@@ -16,5 +38,3 @@ Added support for EN and pt_BR languages.
 Created the .desktop file for the wallselect.sh script.
 
 ##########################################################################################
-
-

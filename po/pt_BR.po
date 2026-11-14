@@ -1,0 +1,263 @@
+# Portuguese translations for wallselect package.
+# Copyright (C) 2026 THE wallselect'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the wallselect package.
+# fernando <kurumin@disroot.org>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wallselect 1.0\n"
+"Report-Msgid-Bugs-To: kurumin@disroot.org\n"
+"POT-Creation-Date: 2026-11-14 10:50+0100\n"
+"PO-Revision-Date: 2026-11-14 10:50+0100\n"
+"Last-Translator: fernando <kurumin@disroot.org>\n"
+"Language-Team: Brazilian Portuguese <ldpbr-"
+"translation@lists.sourceforge.net>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/wallselect.sh:217
+msgid "no se pudo crear la caché %s"
+msgstr "não foi possível criar o cache %s"
+
+#: src/wallselect.sh:237
+msgid "Fondos"
+msgstr "Papéis de parede"
+
+#: src/wallselect.sh:410
+msgid "Aleatoria"
+msgstr "Aleatória"
+
+#: src/wallselect.sh:411
+msgid "Sin animación"
+msgstr "Sem animação"
+
+#: src/wallselect.sh:412
+msgid "Fundido"
+msgstr "Dissolver"
+
+#: src/wallselect.sh:413
+msgid "Barrido"
+msgstr "Varredura"
+
+#: src/wallselect.sh:414
+msgid "Disco"
+msgstr "Disco"
+
+#: src/wallselect.sh:415
+msgid "Rayas"
+msgstr "Listras"
+
+#: src/wallselect.sh:416
+msgid "Iris Bloom"
+msgstr "Iris Bloom"
+
+#: src/wallselect.sh:417
+msgid "Pixelado"
+msgstr "Pixelização"
+
+#: src/wallselect.sh:418
+msgid "Portal"
+msgstr "Portal"
+
+#: src/wallselect.sh:437
+msgid "no se pudo detectar el monitor"
+msgstr "não foi possível detectar o monitor"
+
+#: src/wallselect.sh:451 src/wallselect.sh:754
+msgid "Fondo no encontrado"
+msgstr "Papel de parede não encontrado"
+
+#: src/wallselect.sh:457 src/wallselect.sh:476 src/wallselect.sh:489
+msgid "Fondo cambiado"
+msgstr "Papel de parede alterado"
+
+#: src/wallselect.sh:461
+msgid "Tema aplicado"
+msgstr "Tema aplicado"
+
+#: src/wallselect.sh:462
+msgid "Colores generados desde %s"
+msgstr "Cores geradas a partir de %s"
+
+#: src/wallselect.sh:493
+msgid "No se pudo aplicar el fondo"
+msgstr "Não foi possível aplicar o papel de parede"
+
+#: src/wallselect.sh:494
+msgid "Instala DMS, swww o swaybg para poder cambiar el fondo."
+msgstr "Instale DMS, swww ou swaybg para poder trocar o papel de parede."
+
+#: src/wallselect.sh:557
+msgid "Wofi no está instalado o no está en PATH"
+msgstr "O Wofi não está instalado ou não está no PATH"
+
+#: src/wallselect.sh:558 src/wallselect.sh:866 src/wallselect.sh:875
+msgid "no existe la carpeta %s"
+msgstr "a pasta %s não existe"
+
+#: src/wallselect.sh:567 src/wallselect.sh:869 src/wallselect.sh:879
+msgid "no se encontraron fondos en %s"
+msgstr "nenhum papel de parede encontrado em %s"
+
+#: src/wallselect.sh:632
+msgid "no se pudo crear el archivo temporal del menú"
+msgstr "não foi possível criar o arquivo temporário do menu"
+
+#: src/wallselect.sh:654 src/wallselect.sh:658
+msgid "Wallselect"
+msgstr "Wallselect"
+
+#: src/wallselect.sh:654
+msgid "No hay fondos que mostrar."
+msgstr "Não há papéis de parede para mostrar."
+
+#: src/wallselect.sh:655
+msgid "no hay fondos que mostrar en %s"
+msgstr "não há papéis de parede para mostrar em %s"
+
+#: src/wallselect.sh:659
+msgid "ImageMagick no está instalado: se usarán las imágenes originales."
+msgstr "O ImageMagick não está instalado: serão usadas as imagens originais."
+
+#: src/wallselect.sh:668
+msgid "Ajustes de transición:"
+msgstr "Configurações de transição:"
+
+#: src/wallselect.sh:672
+msgid "Buscar fondos"
+msgstr "Buscar papéis de parede"
+
+#: src/wallselect.sh:679
+msgid "no se pudo crear el archivo CSS temporal"
+msgstr "não foi possível criar o arquivo CSS temporário"
+
+#: src/wallselect.sh:684
+msgid "Fondo generado por wallselect"
+msgstr "Plano de fundo gerado pelo wallselect"
+
+#: src/wallselect.sh:740 src/wallselect.sh:742
+msgid "Error de wofi"
+msgstr "Erro no Wofi"
+
+#: src/wallselect.sh:741
+msgid "Consulta el log para más detalles"
+msgstr "Consulte o log para obter mais detalhes"
+
+#: src/wallselect.sh:770
+msgid ""
+"\n"
+"wallselect.sh - Selector de fondos de pantalla para Wofi + DMS\n"
+"\n"
+"USO: wallselect.sh [OPCIÓN]\n"
+"\n"
+"\n"
+"DESCRIPCIÓN:\n"
+"\n"
+"Explora tu colección de fondos de pantalla, visualiza miniaturas y aplica "
+"imágenes con transiciones animadas de DMS.\n"
+"\n"
+"\n"
+"OPCIONES:\n"
+"\n"
+"--random Selecciona y aplica un fondo de pantalla aleatorio.\n"
+"\n"
+"--set ARCHIVO Aplica directamente el fondo de pantalla especificado.\n"
+"\n"
+"--dir DIRECTORIO Establece un directorio personalizado para los fondos de "
+"pantalla.\n"
+"\n"
+"--generate-thumbs Genera o actualiza las miniaturas de las imágenes en "
+"caché.\n"
+"\n"
+"--help, -h Muestra este mensaje de ayuda y finaliza.\n"
+"\n"
+"--version, -v versión\n"
+"\n"
+"\n"
+"ATAJOS DEL MENÚ: Enter Aplica el fondo de pantalla seleccionado.\n"
+"\n"
+"Esc Cierra el selector sin modificar el fondo de pantalla actual.\n"
+"\n"
+"\n"
+"FORMATOS COMPATIBLES: JPG, JPEG, PNG, WEBP, GIF, HEIC y AVIF.\n"
+"\n"
+"\n"
+"CARACTERÍSTICAS:\n"
+"\n"
+"Integración con Wofi y DMS.\n"
+"Transiciones animadas entre fondos de pantalla.\n"
+"Generación paralela de miniaturas.\n"
+"Vista previa con fondo desenfocado.\n"
+"Notificaciones al cambiar el fondo de pantalla.\n"
+"Aplicación alternativa mediante swww o swaybg."
+msgstr ""
+"\n"
+"wallselect.sh - Seletor de papéis de parede para Wofi + DMS\n"
+"\n"
+"USO: wallselect.sh [OPÇÃO]\n"
+"\n"
+"\n"
+"DESCRIÇÃO:\n"
+"\n"
+"Explore sua coleção de papéis de parede, visualize miniaturas e aplique "
+"imagens com transições animadas do DMS.\n"
+"\n"
+"\n"
+"OPÇÕES:\n"
+"\n"
+"--random Seleciona e aplica um papel de parede aleatório.\n"
+"\n"
+"--set ARQUIVO Aplica diretamente o papel de parede especificado.\n"
+"\n"
+"--dir DIRETÓRIO Define um diretório personalizado para os papéis de parede.\n"
+"\n"
+"--generate-thumbs Gera ou atualiza as miniaturas das imagens no cache.\n"
+"\n"
+"--help, -h Exibe esta mensagem de ajuda e encerra.\n"
+"\n"
+"--version, -v Exibe a versão.\n"
+"\n"
+"\n"
+"ATAlHOS DO MENU: Enter Aplica o papel de parede selecionado.\n"
+"\n"
+"Esc Fecha o seletor sem alterar o papel de parede atual.\n"
+"\n"
+"\n"
+"FORMATOS COMPATÍVEIS: JPG, JPEG, PNG, WEBP, GIF, HEIC e AVIF.\n"
+"\n"
+"\n"
+"RECURSOS:\n"
+"\n"
+"Integração com Wofi e DMS.\n"
+"Transições animadas entre papéis de parede.\n"
+"Geração paralela de miniaturas.\n"
+"Pré-visualização com fundo desfocado.\n"
+"Notificações ao alterar o papel de parede.\n"
+"Aplicação alternativa por meio do swww ou swaybg."
+
+#: src/wallselect.sh:836
+msgid "--set necesita una ruta"
+msgstr "--set requer um caminho"
+
+#: src/wallselect.sh:842
+msgid "--dir necesita una ruta"
+msgstr "--dir requer um caminho"
+
+#: src/wallselect.sh:853
+msgid "opción desconocida: %s"
+msgstr "opção desconhecida: %s"
+
+#: src/wallselect.sh:876
+msgid "ImageMagick no está instalado. Instálalo para generar miniaturas."
+msgstr "O ImageMagick não está instalado. Instale-o para gerar miniaturas."
+
+#: src/wallselect.sh:880
+msgid "Generando miniaturas de %s fondos en %s ..."
+msgstr "Gerando miniaturas de %s papéis de parede em %s ..."
+
+#: src/wallselect.sh:882
+msgid "Listo."
+msgstr "Concluído."

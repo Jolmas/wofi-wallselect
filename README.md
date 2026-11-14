@@ -7,15 +7,18 @@ transiciones animadas: fundido, barrido, disco, iris bloom, pixelado, portal…
 Pensado para sesiones Wayland con DMS, pero incluye respaldos para `swww` y
 `swaybg` si DMS no está disponible.
 
-![image](usr/share/doc/wofi-wallselect/image.png)
+![image](image.png)
 
 ## Características
 
 - Rejilla responsive de miniaturas (4 o 5 columnas según la resolución).
-- Búsqueda en vivo por nombre de archivo.
+- Búsqueda en vivo por nombre de archivo y por carpeta.
 - Fondo del menú difuminado a partir del wallpaper actual.
 - El fondo que tienes puesto aparece primero, listo para aplicar con `Enter`.
-- Miniaturas cacheadas y regeneradas automáticamente al añadir fondos.
+- Miniaturas cacheadas por carpeta y regeneradas automáticamente al añadir
+  fondos.
+- Si no hay ImageMagick o una miniatura no se puede generar, el menú usa la
+  imagen original en lugar de ocultar la entrada.
 - Entrada «Ajustes de transición» al final del menú para abrir la pestaña
   Wallpaper de DMS.
 - Notificaciones «Fondo cambiado» y «Tema aplicado».
@@ -23,8 +26,9 @@ Pensado para sesiones Wayland con DMS, pero incluye respaldos para `swww` y
 
 ## Requisitos
 
-Resumen: `wofi` (1.5.3 o superior), `bash` y, recomendado, `DMS`. Para
-miniaturas y fondo difuminado hace falta `ImageMagick`.
+Resumen: `wofi` (1.4.1 o superior; probado con 1.5.3), `bash` 4.4 o superior
+y, recomendado, `DMS`. Para miniaturas y fondo difuminado hace falta
+`ImageMagick`.
 
 Consulta el detalle y los comandos por distribución en
 [REQUIREMENTS.md](usr/share/doc/wofi-wallselect/REQUIREMENTS.md).
@@ -34,19 +38,25 @@ Consulta el detalle y los comandos por distribución en
 ```bash
 git clone https://github.com/Jolmas/wofi-wallselect.git
 cd wofi-wallselect
-sudo cp -r usr /
-sudo cp -r etc /
-
-mv -i ~/.config/wofi  ~/.config/wofi-backup
+./install.sh
 ```
 
-El instalador:
+El instalador no necesita `sudo` y coloca cada archivo en su ruta de usuario:
 
-1. Copia `wallselect.sh`, `style.css` y `wofi.conf` a
-   `~/.config/wofi/wallselect/`.
+| Archivo | Destino |
+| ------- | ------- |
+| Ejecutable | `~/.local/bin/wallselect.sh` |
+| Tema, configuración de wofi y `config.sh` | `~/.config/wofi/wallselect/` |
+| Traducciones | `~/.local/share/locale/` |
+| Lanzador | `~/.local/share/applications/wallselect.desktop` |
+| Documentación | `~/.local/share/doc/wofi-wallselect/` |
+
+Características del instalador:
+
+1. Copia `wallselect.sh`, `style.css` y `wofi.conf` y crea la caché de
+   miniaturas en `~/.cache/wofi-wallselect/`.
 2. Instala `config.sh` solo si no existe (no pisa tu configuración).
-3. Genera la caché de miniaturas en `~/.cache/wofi-wallselect/` (conserva la
-   estructura de carpetas de `WALL_DIR`).
+3. Compila las traducciones con `msgfmt` o usa las incluidas en el repositorio.
 4. Respalda cualquier archivo previo como `*.bak.AAAAAMMDD-HHMMSS`.
 
 Opciones:
@@ -56,26 +66,32 @@ Opciones:
 ./install.sh --help
 ```
 
+Si `~/.local/bin` no está en tu `PATH`, el instalador te lo indicará y podrás
+usar la ruta completa `~/.local/bin/wallselect.sh`.
+
+Para empaquetar en el sistema, `make dist` genera un árbol FHS en `dist/usr/`
+a partir de `src/`, `po/` y `usr/`.
+
 ## Uso
 
 ```bash
-wallselect.sh           # abrir el menú
-wallselect.sh --random  # fondo al azar
-wallselect.sh --set RUTA
-wallselect.sh --dir RUTA
+wallselect.sh                 # abrir el menú
+wallselect.sh --random        # fondo al azar
+wallselect.sh --set RUTA      # aplicar un fondo concreto
+wallselect.sh --dir RUTA      # abrir el menú en otra carpeta
 wallselect.sh --generate-thumbs
 wallselect.sh --help
 ```
 
-| Tecla          | Acción                                       |
-| -------------- | -------------------------------------------- |
-| `Enter`        | Aplicar el fondo seleccionado                |
-| `Esc`          | Cerrar                                       |
+| Tecla   | Acción                        |
+| ------- | ----------------------------- |
+| `Enter` | Aplicar el fondo seleccionado |
+| `Esc`   | Cerrar                        |
 
-El menú muestra solo las miniaturas. Escribe parte del nombre del archivo para
-filtrar la rejilla. La última entrada, «⚙ Ajustes de transición», abre la
-pestaña Wallpaper de DMS (wofi no permite asignar un atajo personalizado de un
-solo uso para esa acción).
+El menú muestra solo las miniaturas. Escribe parte del nombre del archivo o de
+su carpeta para filtrar la rejilla. La última entrada, «⚙ Ajustes de
+transición», abre la pestaña Wallpaper de DMS (wofi no permite asignar un
+atajo personalizado de un solo uso para esa acción).
 
 ## Integración
 
@@ -83,61 +99,55 @@ solo uso para esa acción).
 
 ```xml
 <keybind key="W-F2">
-  <action name="Execute" command="/usr/local/bin/wallselect.sh"/>
+  <action name="Execute" command="~/.local/bin/wallselect.sh"/>
 </keybind>
 ```
 
 **Hyprland** (`~/.config/hypr/hyprland.conf`):
 
 ```ini
-bind = SUPER, W, exec, /usr/local/bin/wallselect.sh
+bind = SUPER, W, exec, ~/.local/bin/wallselect.sh
 ```
 
 **Waybar** (módulo personalizado):
 
-Requiere una fuente Nerd Fonts.
+Requiere una fuente Nerd Fonts:
 
-https://github.com/ryanoasis/nerd-fonts/releases/latest
-
-```
+```bash
 mkdir -p ~/.local/share/fonts
-
 cd /tmp
-
 wget https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz
-
 tar -xf JetBrainsMono.tar.xz -C ~/.local/share/fonts/
-
 fc-cache -fv
 ```
-
 
 ```json
 "custom/wallpaper": {
   "format": "󰸉",
   "tooltip": "Cambiar fondo",
-  "on-click": "/usr/local/bin/wallselect.sh"
+  "on-click": "~/.local/bin/wallselect.sh"
 }
 ```
 
 ## Configuración
 
-Edita `~/.config/wofi/wallselect/config.sh` (todas las opciones son opcionales):
+Edita `~/.config/wofi/wallselect/config.sh` (todas las opciones son
+opcionales):
 
-| Variable          | Por defecto                             | Descripción                                     |
-| ----------------- | --------------------------------------- | ----------------------------------------------- |
-| `WALL_DIR`        | `~/Imágenes/Wallpapers`                 | Carpeta de fondos                               |
-| `THEME`           | `~/.config/wofi/wallselect/style.css`   | Tema CSS de wofi                                |
-| `WOFI_CONF`       | `~/.config/wofi/wallselect/wofi.conf`   | Configuración propia de wofi (posición, modo…)  |
-| `CACHE_DIR`       | `~/.cache/wofi-wallselect`              | Caché de miniaturas y fondos difuminados        |
-| `THUMB_W/H`       | `480` / `300`                           | Tamaño de las miniaturas                        |
-| `ROWS`            | `4`                                     | Filas visibles del menú                         |
-| `MAX_HEIGHT_PCT`  | `85`                                    | Alto máximo de la ventana (% de la pantalla)    |
-| `SHUFFLE`         | `0`                                     | `1` = orden aleatorio al abrir el menú          |
-| `NOTIFY`          | `1`                                     | `0` = sin notificaciones                        |
-| `THEME_NOTIFY`    | `1`                                     | `0` = sin aviso «Tema aplicado»                 |
-| `JOBS`            | núcleos de CPU                          | Procesos en paralelo al generar miniaturas      |
-| `NORMAL_WINDOW`   | `0`                                     | `1` = ventana normal en vez de layer-shell      |
+| Variable         | Por defecto                                  | Descripción                                     |
+| ---------------- | -------------------------------------------- | ----------------------------------------------- |
+| `WALL_DIR`       | `$(xdg-user-dir PICTURES)/Wallpapers`        | Carpeta de fondos                               |
+| `THEME`          | `~/.config/wofi/wallselect/style.css`        | Tema CSS de wofi                                |
+| `WOFI_CONF`      | `~/.config/wofi/wallselect/wofi.conf`        | Configuración propia de wofi (posición, modo…)  |
+| `CACHE_DIR`      | `~/.cache/wofi-wallselect`                   | Caché de miniaturas y fondos difuminados        |
+| `THUMB_W/H`      | `480` / `300`                                | Tamaño de las miniaturas                        |
+| `ROWS`           | `4`                                          | Filas visibles del menú                         |
+| `MAX_HEIGHT_PCT` | `85`                                         | Alto máximo de la ventana (% de la pantalla)    |
+| `SHUFFLE`        | `0`                                          | `1` = orden aleatorio al abrir el menú          |
+| `NOTIFY`         | `1`                                          | `0` = sin notificaciones                        |
+| `THEME_NOTIFY`   | `1`                                          | `0` = sin aviso «Tema aplicado»                 |
+| `JOBS`           | núcleos de CPU                               | Procesos en paralelo al generar miniaturas      |
+| `NORMAL_WINDOW`  | `0`                                          | `1` = ventana normal en vez de layer-shell      |
 
 La posición y el comportamiento del menú se definen en
 `~/.config/wofi/wallselect/wofi.conf`, que se pasa a wofi con `--conf`. Así el
@@ -185,7 +195,7 @@ systemctl --user restart dms
   de minúsculas.
 - **Revisar errores de wofi**: consulta `~/.cache/wofi-wallselect/wofi.log`.
   El aviso `gtk_widget_set_size_request: assertion 'height >= -1' failed` es
-  interno de wofi 1.4.1 y no afecta al menú.
+  interno de versiones antiguas de wofi 1.4.x y no afecta al menú.
 - **swww falla con `InvalidEnumDiscriminant(("Format", ...))`**: usa DMS. Este
   script ya prioriza DMS y solo recurre a `swww`/`swaybg` si no está.
 - **DMS no responde**: comprueba `systemctl --user status dms`.
@@ -202,50 +212,42 @@ systemctl --user restart dms
 ## Estructura del proyecto
 
 ```
-├── etc
-│   └── skel
-└── usr
-    ├── local
-    │   └── bin
-    │       └── wallselect.sh
-    └── share
-        ├── applications
-        │   └── wallselect.desktop
-        ├── doc
-        │   └── wofi-wallselect
-        │       ├── AUTHORS
-        │       ├── ChangeLog
-        │       ├── DESCRIPTION.md
-        │       ├── LICENSE
-        │       ├── Makefile
-        │       ├── README.md
-        │       ├── REQUIREMENTS.md
-        │       ├── image.png
-        │       ├── install.sh
-        │       ├── po
-        │       │   ├── en_GB.po
-        │       │   ├── pt_BR.po
-        │       │   └── wallselect.pot
-        │       └── uninstall.sh
-        ├── icons
-        │   └── hicolor
-        │       └── 48x48
-        │           └── places
-        ├── locale
-        │   ├── en_US
-        │   │   └── LC_MESSAGES
-        │   │       └── wallselect.mo
-        │   └── pt_BR
-        │       └── LC_MESSAGES
-        │           └── wallselect.mo
-        └── man
-            ├── man1
-            └── pt_BR
-                └── man1
-
-24 directories, 17 files
-
+├── src
+│   ├── config.sh
+│   ├── style.css
+│   ├── wallselect.sh
+│   └── wofi.conf
+├── po
+│   ├── en.po
+│   ├── pt_BR.po
+│   └── wallselect.pot
+├── usr
+│   └── share
+│       ├── applications
+│       │   └── wallselect.desktop
+│       ├── doc
+│       │   └── wofi-wallselect
+│       │       ├── AUTHORS
+│       │       ├── ChangeLog
+│       │       ├── DESCRIPTION.md
+│       │       └── REQUIREMENTS.md
+│       └── locale
+│           ├── en
+│           │   └── LC_MESSAGES
+│           │       └── wallselect.mo
+│           └── pt_BR
+│               └── LC_MESSAGES
+│                   └── wallselect.mo
+├── image.png
+├── install.sh
+├── uninstall.sh
+├── Makefile
+├── LICENSE
+└── README.md
 ```
+
+`make dist` crea además `dist/usr/` con el ejecutable, los recursos, el
+lanzador, la documentación y las traducciones listos para empaquetar.
 
 ## Entorno probado
 
@@ -254,11 +256,10 @@ systemctl --user restart dms
 - DMS (DankMaterialShell)
 - Pantalla 1920×1080 (`eDP-1`)
 
-## Enlaces a fondos de pantalla:  
+## Enlaces a fondos de pantalla
 
 [BigLinux Wallpapers](https://github.com/biglinux/extra-biglinux-wallpapers)  
-[BigLinux Wallpapers 2023](https://github.com/biglinux/extra-biglinux-wallpapers-2023)  
-
+[BigLinux Wallpapers 2023](https://github.com/biglinux/extra-biglinux-wallpapers-2023)
 
 ## Licencia
 

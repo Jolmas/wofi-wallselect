@@ -7,8 +7,8 @@
 # el lanzador en ~/.local/share/applications y la documentación en
 # ~/.local/share/doc/wofi-wallselect.
 #
-# No necesita sudo. Para empaquetar en el sistema usa las fuentes de src/ y
-# el árbol usr/ con tu herramienta de empaquetado.
+# No necesita sudo. Para empaquetar en el sistema (bajo /usr/local) usa
+# `make dist` o `make install-system` en su lugar.
 #
 set -euo pipefail
 

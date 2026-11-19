@@ -1,9 +1,10 @@
 SHELL := /bin/bash
 BIN_DIR ?= $(HOME)/.local/bin
+DESTDIR ?=
 XGETTEXT ?= xgettext
 MSGFMT ?= msgfmt
 
-.PHONY: all help check install uninstall thumbs pot mo dist clean
+.PHONY: all help check install uninstall install-system thumbs pot mo dist clean
 
 all: help
 
@@ -11,6 +12,7 @@ help:
 	@echo "wofi-wallselect"
 	@echo
 	@echo "  make install     Instala para el usuario actual (sin sudo)"
+	@echo "  make install-system  Instala dist/ en el sistema (sudo; admite DESTDIR)"
 	@echo "  make uninstall   Desinstala (conserva config.sh y la caché)"
 	@echo "  make thumbs      Regenera la caché de miniaturas"
 	@echo "  make check       Valida scripts, tema, configuración y traducciones"
@@ -61,32 +63,51 @@ pot:
 		--output=po/wallselect.pot \
 		src/wallselect.sh
 
+# Cuando se invoca con sudo (p. ej. `sudo make install-system`), todo el
+# make corre como root y los artefactos generados dentro del repositorio
+# quedarían en root. Los devolvemos al usuario original para que pueda
+# borrarlos o regenerarlos sin privilegios.
+RESTORE_OWNER = if [[ -n "$${SUDO_USER:-}" ]]; then \
+	chown -R -- "$$SUDO_USER" "$1" || echo "aviso: no se pudo devolver $1 a $$SUDO_USER" >&2; \
+fi
+
 mo:
 	@for po in po/*.po; do \
 		lang=$$(basename "$$po" .po); \
 		mkdir -p "usr/share/locale/$$lang/LC_MESSAGES"; \
 		$(MSGFMT) --check -o "usr/share/locale/$$lang/LC_MESSAGES/wallselect.mo" "$$po" || exit 1; \
 	done
+	@$(call RESTORE_OWNER,usr/share/locale)
 
 dist: mo
 	rm -rf dist
 	install -Dm755 src/wallselect.sh dist/usr/local/bin/wallselect.sh
-	install -Dm644 src/style.css dist/usr/share/wofi-wallselect/style.css
-	install -Dm644 src/wofi.conf dist/usr/share/wofi-wallselect/wofi.conf
-	install -Dm644 src/config.sh dist/usr/share/wofi-wallselect/config.sh
-	install -Dm644 usr/share/applications/wallselect.desktop dist/usr/share/applications/wallselect.desktop
-	install -Dm644 README.md dist/usr/share/doc/wofi-wallselect/README.md
-	@sed -i 's#usr/share/doc/wofi-wallselect/##g' dist/usr/share/doc/wofi-wallselect/README.md
-	install -Dm644 LICENSE dist/usr/share/doc/wofi-wallselect/LICENSE
-	install -Dm644 image.png dist/usr/share/doc/wofi-wallselect/image.png
+	install -Dm644 src/style.css dist/usr/local/share/wofi-wallselect/style.css
+	install -Dm644 src/wofi.conf dist/usr/local/share/wofi-wallselect/wofi.conf
+	install -Dm644 src/config.sh dist/usr/local/share/wofi-wallselect/config.sh
+	install -Dm644 usr/share/applications/wallselect.desktop dist/usr/local/share/applications/wallselect.desktop
+	install -Dm644 README.md dist/usr/local/share/doc/wofi-wallselect/README.md
+	@sed -i 's#usr/share/doc/wofi-wallselect/##g' dist/usr/local/share/doc/wofi-wallselect/README.md
+	install -Dm644 LICENSE dist/usr/local/share/doc/wofi-wallselect/LICENSE
+	install -Dm644 image.png dist/usr/local/share/doc/wofi-wallselect/image.png
 	@for doc in AUTHORS ChangeLog DESCRIPTION.md REQUIREMENTS.md; do \
-		install -Dm644 "usr/share/doc/wofi-wallselect/$$doc" "dist/usr/share/doc/wofi-wallselect/$$doc"; \
+		install -Dm644 "usr/share/doc/wofi-wallselect/$$doc" "dist/usr/local/share/doc/wofi-wallselect/$$doc"; \
 	done
 	@for mo in usr/share/locale/*/LC_MESSAGES/wallselect.mo; do \
 		lang=$$(basename "$$(dirname "$$(dirname "$$mo")")"); \
-		install -Dm644 "$$mo" "dist/usr/share/locale/$$lang/LC_MESSAGES/wallselect.mo"; \
+		install -Dm644 "$$mo" "dist/usr/local/share/locale/$$lang/LC_MESSAGES/wallselect.mo"; \
 	done
-	@echo "Árbol preparado en dist/"
+	@$(call RESTORE_OWNER,dist)
+	@echo "Árbol preparado en dist/ (todo bajo usr/local)"
+
+# Instala el árbol FHS de dist/ en el sistema. Sin DESTDIR requiere root;
+# con DESTDIR=... vuelca los archivos en esa raíz (útil al empaquetar).
+# --no-preserve=ownership evita que los archivos instalados hereden el dueño
+# de dist/ (el usuario del repo) cuando se copian con sudo.
+install-system: dist
+	mkdir -p -- "$(DESTDIR)/usr"
+	cp -a --no-preserve=ownership -- dist/usr/. "$(DESTDIR)/usr/"
+	@echo "Instalado en $(DESTDIR)/usr"
 
 clean:
 	rm -rf dist

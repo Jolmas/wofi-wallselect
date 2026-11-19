@@ -26,9 +26,8 @@ Pensado para sesiones Wayland con DMS, pero incluye respaldos para `swww` y
 
 ## Requisitos
 
-Resumen: `wofi` (1.4.1 o superior; probado con 1.5.3), `bash` 4.4 o superior
-y, recomendado, `DMS`. Para miniaturas y fondo difuminado hace falta
-`ImageMagick`.
+Resumen: `wofi` (1.4.1 o superior; probado con 1.5.3), `bash` 4.4 o superior y,
+recomendado, `DMS`. Para miniaturas y fondo difuminado hace falta `ImageMagick`.
 
 Consulta el detalle y los comandos por distribución en
 [REQUIREMENTS.md](usr/share/doc/wofi-wallselect/REQUIREMENTS.md).
@@ -43,13 +42,13 @@ cd wofi-wallselect
 
 El instalador no necesita `sudo` y coloca cada archivo en su ruta de usuario:
 
-| Archivo | Destino |
-| ------- | ------- |
-| Ejecutable | `~/.local/bin/wallselect.sh` |
-| Tema, configuración de wofi y `config.sh` | `~/.config/wofi/wallselect/` |
-| Traducciones | `~/.local/share/locale/` |
-| Lanzador | `~/.local/share/applications/wallselect.desktop` |
-| Documentación | `~/.local/share/doc/wofi-wallselect/` |
+| Archivo                                   | Destino                                          |
+| ----------------------------------------- | ------------------------------------------------ |
+| Ejecutable                                | `~/.local/bin/wallselect.sh`                     |
+| Tema, configuración de wofi y `config.sh` | `~/.config/wofi/wallselect/`                     |
+| Traducciones                              | `~/.local/share/locale/`                         |
+| Lanzador                                  | `~/.local/share/applications/wallselect.desktop` |
+| Documentación                             | `~/.local/share/doc/wofi-wallselect/`            |
 
 Características del instalador:
 
@@ -69,8 +68,16 @@ Opciones:
 Si `~/.local/bin` no está en tu `PATH`, el instalador te lo indicará y podrás
 usar la ruta completa `~/.local/bin/wallselect.sh`.
 
-Para empaquetar en el sistema, `make dist` genera un árbol FHS en `dist/usr/`
-a partir de `src/`, `po/` y `usr/`.
+Para empaquetar en el sistema, `make dist` genera un árbol FHS en `dist/usr/` a
+partir de `src/`, `po/` y `usr/`, con todo bajo `/usr/local`: el ejecutable en
+`/usr/local/bin` y los recursos (tema, lanzador, documentación y traducciones)
+en `/usr/local/share`. Ese paso **no instala nada**: solo prepara los archivos.
+Para copiarlos al sistema, o a una raíz de empaquetado:
+
+```bash
+sudo make install-system                  # instala dist/usr/ en /usr/
+make install-system DESTDIR=/tmp/pkgroot  # empaquetado: raíz alternativa
+```
 
 ## Uso
 
@@ -90,8 +97,8 @@ wallselect.sh --help
 
 El menú muestra solo las miniaturas. Escribe parte del nombre del archivo o de
 su carpeta para filtrar la rejilla. La última entrada, «⚙ Ajustes de
-transición», abre la pestaña Wallpaper de DMS (wofi no permite asignar un
-atajo personalizado de un solo uso para esa acción).
+transición», abre la pestaña Wallpaper de DMS (wofi no permite asignar un atajo
+personalizado de un solo uso para esa acción).
 
 ## Integración
 
@@ -131,29 +138,28 @@ fc-cache -fv
 
 ## Configuración
 
-Edita `~/.config/wofi/wallselect/config.sh` (todas las opciones son
-opcionales):
+Edita `~/.config/wofi/wallselect/config.sh` (todas las opciones son opcionales):
 
-| Variable         | Por defecto                                  | Descripción                                     |
-| ---------------- | -------------------------------------------- | ----------------------------------------------- |
-| `WALL_DIR`       | `$(xdg-user-dir PICTURES)/Wallpapers`        | Carpeta de fondos                               |
-| `THEME`          | `~/.config/wofi/wallselect/style.css`        | Tema CSS de wofi                                |
-| `WOFI_CONF`      | `~/.config/wofi/wallselect/wofi.conf`        | Configuración propia de wofi (posición, modo…)  |
-| `CACHE_DIR`      | `~/.cache/wofi-wallselect`                   | Caché de miniaturas y fondos difuminados        |
-| `THUMB_W/H`      | `480` / `300`                                | Tamaño de las miniaturas                        |
-| `ROWS`           | `4`                                          | Filas visibles del menú                         |
-| `MAX_HEIGHT_PCT` | `85`                                         | Alto máximo de la ventana (% de la pantalla)    |
-| `SHUFFLE`        | `0`                                          | `1` = orden aleatorio al abrir el menú          |
-| `NOTIFY`         | `1`                                          | `0` = sin notificaciones                        |
-| `THEME_NOTIFY`   | `1`                                          | `0` = sin aviso «Tema aplicado»                 |
-| `JOBS`           | núcleos de CPU                               | Procesos en paralelo al generar miniaturas      |
-| `NORMAL_WINDOW`  | `0`                                          | `1` = ventana normal en vez de layer-shell      |
+| Variable         | Por defecto                           | Descripción                                    |
+| ---------------- | ------------------------------------- | ---------------------------------------------- |
+| `WALL_DIR`       | `$(xdg-user-dir PICTURES)/Wallpapers` | Carpeta de fondos                              |
+| `THEME`          | `~/.config/wofi/wallselect/style.css` | Tema CSS de wofi                               |
+| `WOFI_CONF`      | `~/.config/wofi/wallselect/wofi.conf` | Configuración propia de wofi (posición, modo…) |
+| `CACHE_DIR`      | `~/.cache/wofi-wallselect`            | Caché de miniaturas y fondos difuminados       |
+| `THUMB_W/H`      | `480` / `300`                         | Tamaño de las miniaturas                       |
+| `ROWS`           | `4`                                   | Filas visibles del menú                        |
+| `MAX_HEIGHT_PCT` | `85`                                  | Alto máximo de la ventana (% de la pantalla)   |
+| `SHUFFLE`        | `0`                                   | `1` = orden aleatorio al abrir el menú         |
+| `NOTIFY`         | `1`                                   | `0` = sin notificaciones                       |
+| `THEME_NOTIFY`   | `1`                                   | `0` = sin aviso «Tema aplicado»                |
+| `JOBS`           | núcleos de CPU                        | Procesos en paralelo al generar miniaturas     |
+| `NORMAL_WINDOW`  | `0`                                   | `1` = ventana normal en vez de layer-shell     |
 
 La posición y el comportamiento del menú se definen en
 `~/.config/wofi/wallselect/wofi.conf`, que se pasa a wofi con `--conf`. Así el
-selector no hereda los offsets ni otras opciones de `~/.config/wofi/config`.
-Si las filas configuradas no caben en pantalla, `wallselect.sh` reduce las
-visibles automáticamente.
+selector no hereda los offsets ni otras opciones de `~/.config/wofi/config`. Si
+las filas configuradas no caben en pantalla, `wallselect.sh` reduce las visibles
+automáticamente.
 
 ## Transiciones
 
@@ -188,13 +194,13 @@ systemctl --user restart dms
   `wofi.conf` mientras uses `location=center`; wofi recoloca la ventana en la
   esquina superior izquierda si detecta cualquier offset. Usa siempre el
   `wofi.conf` del proyecto (se pasa con `--conf`) en lugar de depender de
-  `~/.config/wofi/config`. Con `NORMAL_WINDOW=1` el script desactiva
-  `--lines` para que el compositor pueda centrar la ventana al abrirse.
-- **La búsqueda no encuentra un fondo**: escribe parte del nombre del archivo
-  o de su subcarpeta dentro de `WALL_DIR`. La búsqueda no distingue mayúsculas
-  de minúsculas.
-- **Revisar errores de wofi**: consulta `~/.cache/wofi-wallselect/wofi.log`.
-  El aviso `gtk_widget_set_size_request: assertion 'height >= -1' failed` es
+  `~/.config/wofi/config`. Con `NORMAL_WINDOW=1` el script desactiva `--lines`
+  para que el compositor pueda centrar la ventana al abrirse.
+- **La búsqueda no encuentra un fondo**: escribe parte del nombre del archivo o
+  de su subcarpeta dentro de `WALL_DIR`. La búsqueda no distingue mayúsculas de
+  minúsculas.
+- **Revisar errores de wofi**: consulta `~/.cache/wofi-wallselect/wofi.log`. El
+  aviso `gtk_widget_set_size_request: assertion 'height >= -1' failed` es
   interno de versiones antiguas de wofi 1.4.x y no afecta al menú.
 - **swww falla con `InvalidEnumDiscriminant(("Format", ...))`**: usa DMS. Este
   script ya prioriza DMS y solo recurre a `swww`/`swaybg` si no está.
@@ -246,8 +252,10 @@ systemctl --user restart dms
 └── README.md
 ```
 
-`make dist` crea además `dist/usr/` con el ejecutable, los recursos, el
-lanzador, la documentación y las traducciones listos para empaquetar.
+`make dist` crea además `dist/usr/` con el ejecutable en `usr/local/bin/` y los
+recursos en `usr/local/share/` (tema, lanzador, documentación y traducciones),
+listos para empaquetar. `make install-system` copia ese árbol a `/usr/` (o a
+`$(DESTDIR)/usr/`), de modo que todo acaba bajo `/usr/local`.
 
 ## Entorno probado
 
@@ -258,7 +266,7 @@ lanzador, la documentación y las traducciones listos para empaquetar.
 
 ## Enlaces a fondos de pantalla
 
-[BigLinux Wallpapers](https://github.com/biglinux/extra-biglinux-wallpapers)  
+[BigLinux Wallpapers](https://github.com/biglinux/extra-biglinux-wallpapers)\
 [BigLinux Wallpapers 2023](https://github.com/biglinux/extra-biglinux-wallpapers-2023)
 
 ## Licencia
